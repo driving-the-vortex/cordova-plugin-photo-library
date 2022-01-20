@@ -211,6 +211,7 @@ public class PhotoLibraryService {
             }
           });
         } catch (Exception e) {
+          e.printStackTrace();
           completion.run(null);
         }
       }
