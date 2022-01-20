@@ -200,10 +200,11 @@ public class PhotoLibraryService {
 
     saveMedia(context, cordova, url, album, imageMimeToExtension, new FilePathRunnable() {
       @Override
-      public void run(String filePath) {
+      public void run(String filePath, Uri uri) {
         try {
           // Find the saved image in the library and return it as libraryItem
-          String whereClause = MediaStore.MediaColumns.DATA + " = \"" + filePath + "\"";
+//           String whereClause = MediaStore.MediaColumns.DATA + " = \"" + filePath + "\"";
+          String whereClause = uri.toString();
           queryLibrary(context, whereClause, new ChunkResultRunnable() {
             @Override
             public void run(ArrayList<JSONObject> chunk, int chunkNum, boolean isLastChunk) {
@@ -224,7 +225,7 @@ public class PhotoLibraryService {
 
     saveMedia(context, cordova, url, album, videMimeToExtension, new FilePathRunnable() {
       @Override
-      public void run(String filePath) {
+      public void run(String filePath, Uri uri) {
         // TODO: call queryLibrary and return libraryItem of what was saved
       }
     });
@@ -281,10 +282,27 @@ public class PhotoLibraryService {
 
     final String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
 
-    final Cursor cursor = context.getContentResolver().query(
-      collection,
-      columnValues.toArray(new String[columns.length()]),
-      whereClause, null, sortOrder);
+//     final Cursor cursor = context.getContentResolver().query(
+//       collection,
+//       columnValues.toArray(new String[columns.length()]),
+//       whereClause, null, sortOrder);
+
+    Cursor cursor;
+    if (whereClause == "")
+    {
+        cursor= context.getContentResolver().query(
+              collection,
+              columnValues.toArray(new String[columns.length()]),
+              whereClause, null, sortOrder);
+    }
+    else
+    {
+        Uri uri = Uri.parse(whereClause);
+        cursor= context.getContentResolver().query(
+              uri,
+              columnValues.toArray(new String[columns.length()]),
+              null, null, null);
+    }
 
     final ArrayList<JSONObject> buffer = new ArrayList<JSONObject>();
 
@@ -577,7 +595,7 @@ public class PhotoLibraryService {
     MediaScannerConnection.scanFile(context, new String[]{filePath}, null, new MediaScannerConnection.OnScanCompletedListener() {
       @Override
       public void onScanCompleted(String path, Uri uri) {
-        completion.run(path);
+        completion.run(path, uri);
       }
     });
 
@@ -663,7 +681,7 @@ public class PhotoLibraryService {
 
   public interface FilePathRunnable {
 
-    void run(String filePath);
+    void run(String filePath, Uri uri);
 
   }
 
